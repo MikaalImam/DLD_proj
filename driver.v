@@ -1,6 +1,6 @@
 module vga_test
 	(
-		input wire clk, reset,
+		input wire clk, reset, revolution,
 		output wire hsync, vsync,
 		output wire [11:0] rgb
 	);
@@ -17,16 +17,29 @@ module vga_test
     //COUNTER FOR LIVE DATA //////////////////////////////////////////////////////////
     //Instantiate a counter with counterValue representing the 0-9 count in ASCII
     wire [6:0] counterValue; 
+    wire [6:0] rev_counter;
     wire [6:0] final_tens;
-    counter counter1(.clk(clk), .reset(reset), .out(counterValue), .tens_out(final_tens));
+    counter counter1(.clk(clk),.revolution(revolution), .reset(reset), .out(counterValue), .tens_out(final_tens), .rev_counter(rev_counter));
     //////////////////////////////////////////////////////////////////////////////////
     
     //READ MEMORY FILE FOR INPUT ASCII ARRAY, CREATE SIGNAL ARRAY                       
     wire [6:0] ascii;  //Signal is concatenated with X coordinate to get a value for the ROM address                 
-    wire [6:0] a[18:0]; //Each index of this array holds a 7-bit ASCII value //6???
-    wire d[18:0]; //Each index of this array holds a signal that says whether the i-th item in array a above should display
+    wire [6:0] a[19:0]; //Each index of this array holds a 7-bit ASCII value //6???
+    wire d[19:0]; //Each index of this array holds a signal that says whether the i-th item in array a above should display
     wire displayContents; //Control signal to determine whether a character should be displayed on the screen
+
+//initial begin
+//    rev_counter = 0; // Initialize to 0 for simulation
+//end
     
+//always @(posedge revolution) begin
+//    if (rev_counter < 9) begin
+//        rev_counter <= rev_counter + 1;
+//    end
+//    else begin
+//        rev_counter = 0;
+//    end
+//end 
     //Read memory file for ascii inputs
     //reg [6:0] readAscii [7:0];
     //initial begin
@@ -97,10 +110,14 @@ module vga_test
         .x(x),.y(y), .displayContents(d[13]), .x_desired(10'd120), .y_desired(10'd140));      
         
         textGeneration c14 (.clk(clk),.reset(reset),.asciiData(a[14]), .ascii_In(counterValue),
-        .x(x),.y(y), .displayContents(d[14]), .x_desired(10'd128), .y_desired(10'd140));      
+        .x(x),.y(y), .displayContents(d[14]), .x_desired(10'd128), .y_desired(10'd140));  
         
+        //Revolution
+        textGeneration c20 (.clk(clk),.reset(reset),.asciiData(a[19]), .ascii_In(rev_counter),
+        .x(x),.y(y), .displayContents(d[19]), .x_desired(10'd500), .y_desired(10'd80));  
         
-//Decoder to trigger displayContents signal high or low depending on which ASCII char is reached
+   
+ //Decoder to trigger displayContents signal high or low depending on which ASCII char is reached
     assign displayContents = d[0] ? d[0] :
                              d[1] ? d[1] :
                              d[2] ? d[2] :
@@ -119,7 +136,9 @@ module vga_test
                              d[15] ? d[15] :
                              d[16] ? d[16] :
                              d[17] ? d[17] :
-                             d[18] ? d[18] : 0;
+                             d[19] ? d[19] :
+                             d[18] ? d[18] : 0
+                             ;
 //Decoder to assign correct ASCII value depending on which displayContents signal is used                        
     assign ascii = d[0] ? a[0] :
                    d[1] ? a[1] :
@@ -139,6 +158,7 @@ module vga_test
                    d[15] ? a[15] :
                    d[16] ? a[16] :
                    d[17] ? a[17] :
+                   d[19] ? a[19] :
                    d[18] ? a[18] : 7'h30; //defaulted to 0
  
  //ASCII_ROM////////////////////////////////////////////////////////////       
