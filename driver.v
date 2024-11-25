@@ -1,6 +1,6 @@
 module vga_test
 	(
-		input wire clk, reset, revolution,
+		input wire clk, reset, revolution,timer_start, 
 		output wire hsync, vsync,
 		output wire [11:0] rgb
 	);
@@ -25,7 +25,9 @@ module vga_test
     wire [6:0] distThousands;
     wire [6:0] speedOnes;
     wire [6:0] speedTens;
-    counter counter1(.clk(clk),.revolution(revolution), .reset(reset), .out(counterValue), .tens_out(final_tens), .rev_counter(rev_counter),
+    counter counter1(.clk(clk),.revolution(revolution), .reset(timer_start), //switched rest wtih my own reset 
+            .out(counterValue), .tens_out(final_tens), 
+            .rev_counter(rev_counter),
             .distOnes(distOnes),
             .distTens(distTens),
             .distHundreds(distHundreds),
@@ -33,6 +35,10 @@ module vga_test
             .speedOnes(speedOnes),
             .speedTens(speedTens)
             );
+            
+    wire display_char;
+    character char(.sensor(revolution), .x(x), .y(y), .display_char(display_char));
+    
     //////////////////////////////////////////////////////////////////////////////////
     
     //READ MEMORY FILE FOR INPUT ASCII ARRAY, CREATE SIGNAL ARRAY                       
@@ -213,5 +219,8 @@ module vga_test
         //rom_bit is off display blue
     //Video_off display black
             
-    assign rgb = video_on ? (rom_bit ? ((displayContents) ? 12'hFFF: 12'h8): 12'h8) : 12'b0; //blue background white text
+    //assign rgb = video_on ? (rom_bit ? ((displayContents) ? 12'hFFF: 12'h8): 12'h8) : 12'b0; //blue background white text
+    
+    assign rgb = video_on ? (rom_bit ? ((displayContents) ? 12'hFFF: (display_char ?  12'hF00: 12'h8) ): 12'h8) : 12'b0; 
+
 endmodule
