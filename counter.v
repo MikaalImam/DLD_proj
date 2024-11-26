@@ -2,6 +2,7 @@ module counter(
     input clk,revolution, reset,
     output [6:0] out,
     output [6:0] tens_out,
+    output [6:0] mins_out,
     output reg [6:0] rev_counter,
     output reg [6:0] distOnes,
     output reg [6:0] distTens,
@@ -22,6 +23,8 @@ module counter(
     
     reg [6:0] tens;
     wire [6:0] tens_NS;  
+    reg [6:0] mins;
+    wire [6:0] mins_NS;
     
     reg [31:0] ms_counter;          // Current millisecond counter
     reg [31:0] last_ms_counter;     // Millisecond value at the last revolution
@@ -40,12 +43,14 @@ module counter(
               counter<=0;
               ascii <= 7'h30;
               tens <= 7'h30;
+              mins <= 7'h30;
           end
           else
           begin
               counter <= counter_NS;
               ascii <= ascii_NS;
               tens <= tens_NS;
+              mins <= mins_NS;
           end
     //NS
     
@@ -106,6 +111,8 @@ module counter(
     assign nextOp = (counter == 0);
     assign ascii_NS = nextOp ? ascii < 7'h39 ? ascii + 7'h1 : 7'h30 : ascii;
     assign out = ascii;
-    assign tens_NS = nextOp ? (ascii < 7'h39 ? tens : (tens < 7'h39 ? tens + 7'h1 : 7'h30)) : tens;    
+    assign tens_NS = nextOp ? (ascii < 7'h39 ? tens : (tens < 7'h35 ? tens + 7'h1 : 7'h30)) : tens;    
+    assign mins_NS = nextOp ? (tens < 7'h35 ? mins : (ascii < 7'h39 ? mins : (mins < 7'h39 ? mins + 7'h1 : 7'h30 ) ) ) : mins;
+    assign mins_out = mins;
     assign tens_out = tens;
 endmodule
