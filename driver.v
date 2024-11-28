@@ -37,15 +37,12 @@ module vga_test
             .speedTens(speedTens)
             );
             
-    wire display_char;
-    character char(.sensor(revolution), .x(x), .y(y), .display_char(display_char));
-    
     //////////////////////////////////////////////////////////////////////////////////
     
     //READ MEMORY FILE FOR INPUT ASCII ARRAY, CREATE SIGNAL ARRAY                       
     wire [6:0] ascii;  //Signal is concatenated with X coordinate to get a value for the ROM address                 
-    wire [6:0] a[22:0]; //Each index of this array holds a 7-bit ASCII value //6???
-    wire d[22:0]; //Each index of this array holds a signal that says whether the i-th item in array a above should display
+    wire [6:0] a[31:0]; //Each index of this array holds a 7-bit ASCII value //6???
+    wire d[31:0]; //Each index of this array holds a signal that says whether the i-th item in array a above should display
     wire displayContents; //Control signal to determine whether a character should be displayed on the screen
 
 //initial begin
@@ -145,13 +142,47 @@ module vga_test
         textGeneration c22 (.clk(clk),.reset(reset),.asciiData(a[22]), .ascii_In(rev_counter),
         .x(x),.y(y), .displayContents(d[22]), .x_desired(10'd496), .y_desired(10'd80));  
         
+        //Home page text
+        textGeneration c23 (.clk(clk),.reset(reset),.asciiData(a[23]), .ascii_In(7'h43),
+        .x(x),.y(y), .displayContents(d[23]), .x_desired(10'd280), .y_desired(10'd240));  
+        
+        textGeneration c24 (.clk(clk),.reset(reset),.asciiData(a[24]), .ascii_In(7'h59),
+        .x(x),.y(y), .displayContents(d[24]), .x_desired(10'd288), .y_desired(10'd240));  
+        
+        textGeneration c25 (.clk(clk),.reset(reset),.asciiData(a[25]), .ascii_In(7'h43),
+        .x(x),.y(y), .displayContents(d[25]), .x_desired(10'd296), .y_desired(10'd240));  
+        
+        textGeneration c26 (.clk(clk),.reset(reset),.asciiData(a[26]), .ascii_In(7'h4c),
+        .x(x),.y(y), .displayContents(d[26]), .x_desired(10'd304), .y_desired(10'd240));  
+
+        textGeneration c27 (.clk(clk),.reset(reset),.asciiData(a[27]), .ascii_In(7'h45),
+        .x(x),.y(y), .displayContents(d[27]), .x_desired(10'd312), .y_desired(10'd240));  
+        
+        textGeneration c28 (.clk(clk),.reset(reset),.asciiData(a[28]), .ascii_In(7'h4d),
+        .x(x),.y(y), .displayContents(d[28]), .x_desired(10'd320), .y_desired(10'd240));  
+        
+        textGeneration c29 (.clk(clk),.reset(reset),.asciiData(a[29]), .ascii_In(7'h49),
+        .x(x),.y(y), .displayContents(d[29]), .x_desired(10'd328), .y_desired(10'd240));  
+        
+        textGeneration c30 (.clk(clk),.reset(reset),.asciiData(a[30]), .ascii_In(7'h4c),
+        .x(x),.y(y), .displayContents(d[30]), .x_desired(10'd336), .y_desired(10'd240));  
+
+        textGeneration c31 (.clk(clk),.reset(reset),.asciiData(a[31]), .ascii_In(7'h4c),
+        .x(x),.y(y), .displayContents(d[31]), .x_desired(10'd344), .y_desired(10'd240));  
+
+        
+        
+        
+        
    
  //Decoder to trigger displayContents signal high or low depending on which ASCII char is reached
     wire display_sprite;
     wire [11:0] spriteData;
     sprite_display sprite1(.clk(clk),.reset(reset),.x_desired(10'd300),.y_desired(10'd200),.x(x),
     .y(y),.spriteData(spriteData),.display_sprite(display_sprite));
-    assign displayContents = d[0] ? d[0] :
+    
+    assign displayContents = (timer_start == 0) ? 
+                             (d[0] ? d[0] :
                              d[1] ? d[1] :
                              d[2] ? d[2] :
                              d[3] ? d[3] :
@@ -175,8 +206,16 @@ module vga_test
                              d[22] ? d[22] :
                              d[18] ? d[18] :
                              display_sprite ? display_sprite :
-                              0
-                             ;
+                              0) : (                    
+                             d[23] ? d[23] :
+                             d[24] ? d[24] :
+                             d[25] ? d[25] :
+                             d[26] ? d[26] :
+                             d[27] ? d[27] :
+                             d[28] ? d[28] :
+                             d[29] ? d[29] :
+                             d[30] ? d[30] :
+                             d[31] ? d[31] : 0);
 //Decoder to assign correct ASCII value depending on which displayContents signal is used                        
     assign ascii = d[0] ? a[0] :
                    d[1] ? a[1] :
@@ -200,7 +239,16 @@ module vga_test
                    d[20] ? a[20] :
                    d[21] ? a[21] :
                    d[22] ? a[22] :
-                   d[18] ? a[18] : 7'h30; //defaulted to 0
+                   d[18] ? a[18] : 
+                   d[23] ? a[23] :
+                   d[24] ? a[24] :
+                   d[25] ? a[25] :
+                   d[26] ? a[26] :
+                   d[27] ? a[27] :
+                   d[28] ? a[28] :
+                   d[29] ? a[29] :
+                   d[30] ? a[30] :
+                   d[31] ? a[31] : 7'h30; //defaulted to 0
  
  //ASCII_ROM////////////////////////////////////////////////////////////       
     //Connections to ascii_rom
@@ -232,8 +280,9 @@ module vga_test
             
     //assign rgb = video_on ? (rom_bit ? ((displayContents) ? 12'hFFF: 12'h8): 12'h8) : 12'b0; //blue background white text
     
-assign rgb = video_on ? (
+assign rgb = video_on ? (       //add changes here
+               timer_start == 1 ? (rom_bit ? (displayContents ? 12'hFFF :12'h000) : 12'h000) :
                display_sprite ? spriteData :  // If sprite is being displayed, use spriteData
-               (rom_bit ? (displayContents ? 12'hFFF : (display_char ? 12'hF00 : 12'h000)) : 12'h000)
+               (rom_bit ? (displayContents ? 12'hFFF :12'h000) : 12'h000)
             ) : 12'b0;  // If video is off, turn off the RGB output
 endmodule
