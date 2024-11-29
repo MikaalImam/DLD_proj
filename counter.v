@@ -1,5 +1,5 @@
 module counter(
-    input clk,revolution, reset,
+    input clk,revolution, reset, ms_clk,
     output [6:0] out,
     output [6:0] tens_out,
     output [6:0] mins_out,
@@ -15,6 +15,7 @@ module counter(
      //1 Hz frequency counter
     /////////////////////////////////////////////////////////////
     reg [14:0] dist;
+    reg [14:0] last_dist;
     reg [26:0] counter;
     wire [26:0] counter_NS;
     reg [6:0] ascii;
@@ -30,8 +31,8 @@ module counter(
     reg [31:0] last_ms_counter;     // Millisecond value at the last revolution
     reg [31:0] time_difference_ms;  // Time difference between revolutions
     reg [31:0] cycle_count;         // Counts high-frequency clock cycles
-    parameter CLOCK_FREQ_MHZ = 1_000_000;  // Clock frequency (e.g., 1 MHz)
-    parameter CYCLES_PER_MS = CLOCK_FREQ_MHZ / 1_000;
+//    parameter CLOCK_FREQ_MHZ = 1_000_000;  // Clock frequency (e.g., 1 MHz)
+//    parameter CYCLES_PER_MS = CLOCK_FREQ_MHZ / 1_000;
     
     integer speed_mps;
     
@@ -56,7 +57,6 @@ module counter(
     
     always @(posedge clk or posedge reset) begin
         if (reset) begin
-            ms_counter <= 0;
             cycle_count <= 0;
         end else begin
             // Increment cycle count
@@ -67,18 +67,30 @@ module counter(
         end
     end
     
+     always @(posedge ms_clk or posedge reset) begin
+        if (reset) begin
+            ms_counter <= 0;
+        end 
+        else begin
+            ms_counter <= ms_counter + 1;  // Increment millisecond counter
+        end
+    end
+    
 
     always @(posedge revolution or posedge reset) begin
         if (reset) begin
             rev_counter <= 7'h30;
             dist <= 0;
+            last_dist <= 0;
             time_difference_ms <= 0;
             last_ms_counter <= 0;
             speedOnes <= 7'h30;
             speedTens <= 7'h30;
         end else if (rev_counter < 7'h39) begin
             rev_counter <= rev_counter + 1;
+            last_dist <= dist;
             dist <= dist + 2;
+            
     
             // Update distance registers
             distOnes <=  14'h30 + dist % 10;
@@ -86,17 +98,20 @@ module counter(
             distHundreds <=  14'h30 + (dist / 100) % 10;
             distThousands <=  14'h30 + (dist / 1000) % 10;
     
-            // Calculate time difference
+           // Calculate time difference in milliseconds
             time_difference_ms <= ms_counter - last_ms_counter;
-            last_ms_counter <= ms_counter; // Update last revolution time
-    
-            // Calculate speed (distance / time) in meters per second
-            speed_mps = (dist - last_ms_counter); // Speed in meters/second (2 meters per second for 1 revolution)
-            last_ms_counter <= dist; // Save current distance
-    
+            last_ms_counter <= ms_counter;
+
+            // Calculate speed (distance / time)
+            if (time_difference_ms != 0) begin
+                speed_mps = ((2*1000) / time_difference_ms);  // Convert to meters/second
+            end else begin
+                speed_mps = 1;  // Avoid division by zero
+            end
+
             // Convert speed to ASCII for display
-            speedTens <= (speed_mps / 10) + 7'h30; // Tens place
-            speedOnes <= (speed_mps % 10) + 7'h30; // Ones place
+            speedTens <= (speed_mps / 10) + 7'h30;
+            speedOnes <= (speed_mps % 10) + 7'h30;
     
             // Reset distance if maximum value reached
             if (dist >= 9999) begin
