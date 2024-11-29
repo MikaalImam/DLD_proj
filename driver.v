@@ -1,11 +1,19 @@
 module vga_test
 	(
-		input wire clk, reset, revolution,timer_start, 
+		input wire clk, reset, revolution,timer_start,
 		output wire hsync, vsync,
 		output wire [11:0] rgb
 	);
-	
-	//VGA/////////////////////////////////////////////////////////////////////////////
+	wire ms_clk;
+    wire sec_clk;
+    clk_dividers clkmod(.clk(clk), .reset(reset), .ms_clk(ms_clk), .sec_clk(sec_clk));
+//	wire ms_clk;
+//	ms_clock_generator ms_gen (
+//        .clk(clk),        // 100 MHz clock from Basys3
+//        .reset(reset),    // Reset signal
+//        .ms_clk(ms_clk)   // Generated 1 ms clock
+//    );
+//	//VGA/////////////////////////////////////////////////////////////////////////////
 	// video status output from vga_sync to tell when to route out rgb signal to DAC
 	wire video_on;
     wire [9:0] x,y; //Pixel location
@@ -16,6 +24,7 @@ module vga_test
     
     //COUNTER FOR LIVE DATA //////////////////////////////////////////////////////////
     //Instantiate a counter with counterValue representing the 0-9 count in ASCII
+    
     wire [6:0] counterValue; 
     wire [6:0] rev_counter;
     wire [6:0] final_tens;
@@ -26,7 +35,7 @@ module vga_test
     wire [6:0] distThousands;
     wire [6:0] speedOnes;
     wire [6:0] speedTens;
-    counter counter1(.clk(clk),.revolution(revolution), .reset(timer_start), //switched rest wtih my own reset 
+    counter counter1(.clk(clk),.revolution(revolution), .reset(timer_start), .ms_clk(ms_clk), //switched rest wtih my own reset 
             .out(counterValue), .tens_out(final_tens), .mins_out(final_mins), 
             .rev_counter(rev_counter),
             .distOnes(distOnes),
@@ -195,8 +204,7 @@ module vga_test
         sprite_x <= sprite_x + 1; // Increment x coordinate
     end
 
-    sprite_display sprite1(.clk(clk),.reset(reset),.x_desired(sprite_x),.y_desired(10'd200),.x(x),
-    .y(y),.spriteData(spriteData),.display_sprite(display_sprite));
+    sprite_display sprite1(.clk(clk),.reset(reset),.x_desired(sprite_x),.y_desired(10'd200),.x(x),.y(y),.spriteData(spriteData),.display_sprite(display_sprite));
     
     assign displayContents = (timer_start == 0) ? 
                              (d[0] ? d[0] :
