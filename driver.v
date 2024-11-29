@@ -178,7 +178,24 @@ module vga_test
  //Decoder to trigger displayContents signal high or low depending on which ASCII char is reached
     wire display_sprite;
     wire [11:0] spriteData;
-    sprite_display sprite1(.clk(clk),.reset(reset),.x_desired(10'd300),.y_desired(10'd200),.x(x),
+    reg [9:0] sprite_x; 
+    reg [23:0] clk_div; // 30-bit register for clock division
+    wire slow_clk = clk_div[23]; // Use the MSB as the slower clock signal
+    always @(posedge clk or posedge reset) begin
+        if (reset)
+            clk_div <= 24'd0; // Reset the counter to 0
+        else
+            clk_div <= clk_div + 5; // Increment the counter
+    end
+
+    always @(posedge slow_clk or posedge reset) begin
+    if (reset) 
+        sprite_x <= 10'd0; // Reset the x coordinate
+    else 
+        sprite_x <= sprite_x + 1; // Increment x coordinate
+    end
+
+    sprite_display sprite1(.clk(clk),.reset(reset),.x_desired(sprite_x),.y_desired(10'd200),.x(x),
     .y(y),.spriteData(spriteData),.display_sprite(display_sprite));
     
     assign displayContents = (timer_start == 0) ? 
