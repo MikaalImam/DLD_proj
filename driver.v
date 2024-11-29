@@ -228,6 +228,8 @@ module vga_test
     always @(posedge slow_clk or posedge reset) begin
     if (reset) 
         sprite_x <= 10'd0; // Reset the x coordinate
+    else if (sprite_x>632)
+        sprite_x<=10'd0;
     else 
         sprite_x <= sprite_x + 1; // Increment x coordinate
     end
