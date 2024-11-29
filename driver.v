@@ -50,8 +50,8 @@ module vga_test
     
     //READ MEMORY FILE FOR INPUT ASCII ARRAY, CREATE SIGNAL ARRAY                       
     wire [6:0] ascii;  //Signal is concatenated with X coordinate to get a value for the ROM address                 
-    wire [6:0] a[31:0]; //Each index of this array holds a 7-bit ASCII value //6???
-    wire d[31:0]; //Each index of this array holds a signal that says whether the i-th item in array a above should display
+    wire [6:0] a[40:0]; //Each index of this array holds a 7-bit ASCII value //6???
+    wire d[40:0]; //Each index of this array holds a signal that says whether the i-th item in array a above should display
     wire displayContents; //Control signal to determine whether a character should be displayed on the screen
 
 //initial begin
@@ -178,6 +178,34 @@ module vga_test
 
         textGeneration c31 (.clk(clk),.reset(reset),.asciiData(a[31]), .ascii_In(7'h4c),
         .x(x),.y(y), .displayContents(d[31]), .x_desired(10'd344), .y_desired(10'd240));  
+        
+        //Highscore
+        textGeneration c32 (.clk(clk),.reset(reset),.asciiData(a[32]), .ascii_In(7'h48),
+        .x(x),.y(y), .displayContents(d[32]), .x_desired(10'd424), .y_desired(10'd96));
+
+        textGeneration c33 (.clk(clk),.reset(reset),.asciiData(a[33]), .ascii_In(7'h49),
+        .x(x),.y(y), .displayContents(d[33]), .x_desired(10'd432), .y_desired(10'd96));
+
+        textGeneration c34 (.clk(clk),.reset(reset),.asciiData(a[34]), .ascii_In(7'h47),
+        .x(x),.y(y), .displayContents(d[34]), .x_desired(10'd440), .y_desired(10'd96));
+
+        textGeneration c35 (.clk(clk),.reset(reset),.asciiData(a[35]), .ascii_In(7'h48),
+        .x(x),.y(y), .displayContents(d[35]), .x_desired(10'd448), .y_desired(10'd96));
+
+        textGeneration c36 (.clk(clk),.reset(reset),.asciiData(a[36]), .ascii_In(7'h53),
+        .x(x),.y(y), .displayContents(d[36]), .x_desired(10'd464), .y_desired(10'd96));
+
+        textGeneration c37 (.clk(clk),.reset(reset),.asciiData(a[37]), .ascii_In(7'h43),
+        .x(x),.y(y), .displayContents(d[37]), .x_desired(10'd472), .y_desired(10'd96));
+
+        textGeneration c38 (.clk(clk),.reset(reset),.asciiData(a[38]), .ascii_In(7'h4f),
+        .x(x),.y(y), .displayContents(d[38]), .x_desired(10'd480), .y_desired(10'd96));
+
+        textGeneration c39 (.clk(clk),.reset(reset),.asciiData(a[39]), .ascii_In(7'h52),
+        .x(x),.y(y), .displayContents(d[39]), .x_desired(10'd488), .y_desired(10'd96));
+
+        textGeneration c40 (.clk(clk),.reset(reset),.asciiData(a[40]), .ascii_In(7'h45),
+        .x(x),.y(y), .displayContents(d[40]), .x_desired(10'd496), .y_desired(10'd96));
 
         
         
@@ -206,74 +234,93 @@ module vga_test
 
     sprite_display sprite1(.clk(clk),.reset(reset),.x_desired(sprite_x),.y_desired(10'd200),.x(x),.y(y),.spriteData(spriteData),.display_sprite(display_sprite));
     
-    assign displayContents = (timer_start == 0) ? 
-                             (d[0] ? d[0] :
-                             d[1] ? d[1] :
-                             d[2] ? d[2] :
-                             d[3] ? d[3] :
-                             d[4] ? d[4] :
-                             d[5] ? d[5] :
-                             d[6] ? d[6] :
-                             d[7] ? d[7] :
-                             d[8] ? d[8] :
-                             d[9] ? d[9] :
-                             d[10] ? d[10] :
-                             d[11] ? d[11] :
-                             d[12] ? d[12] :
-                             d[13] ? d[13] :
-                             d[14] ? d[14] :
-                             d[15] ? d[15] :
-                             d[16] ? d[16] :
-                             d[17] ? d[17] :
-                             d[19] ? d[19] :
-                             d[20] ? d[20] :
-                             d[21] ? d[21] :
-                             d[22] ? d[22] :
-                             d[18] ? d[18] :
-                             display_sprite ? display_sprite :
-                              0) : (                    
-                             d[23] ? d[23] :
-                             d[24] ? d[24] :
-                             d[25] ? d[25] :
-                             d[26] ? d[26] :
-                             d[27] ? d[27] :
-                             d[28] ? d[28] :
-                             d[29] ? d[29] :
-                             d[30] ? d[30] :
-                             d[31] ? d[31] : 0);
+assign displayContents = (timer_start == 0) ? 
+                    (d[0] ? d[0] :
+                    d[1] ? d[1] :
+                    d[2] ? d[2] :
+                    d[3] ? d[3] :
+                    d[4] ? d[4] :
+                    d[5] ? d[5] :
+                    d[6] ? d[6] :
+                    d[7] ? d[7] :
+                    d[8] ? d[8] :
+                    d[9] ? d[9] :
+                    d[10] ? d[10] :
+                    d[11] ? d[11] :
+                    d[12] ? d[12] :
+                    d[13] ? d[13] :
+                    d[14] ? d[14] :
+                    d[15] ? d[15] :
+                    d[16] ? d[16] :
+                    d[17] ? d[17] :
+                    d[19] ? d[19] :
+                    d[20] ? d[20] :
+                    d[21] ? d[21] :
+                    d[22] ? d[22] :
+                    d[18] ? d[18] :
+                    d[32] ? d[32] :
+                    d[33] ? d[33] :
+                    d[34] ? d[34] :
+                    d[35] ? d[35] :
+                    d[36] ? d[36] :
+                    d[37] ? d[37] :
+                    d[38] ? d[38] :
+                    d[39] ? d[39] :
+                    d[40] ? d[40] :
+                    display_sprite ? display_sprite :
+                     0) : (                    
+                    d[23] ? d[23] :
+                    d[24] ? d[24] :
+                    d[25] ? d[25] :
+                    d[26] ? d[26] :
+                    d[27] ? d[27] :
+                    d[28] ? d[28] :
+                    d[29] ? d[29] :
+                    d[30] ? d[30] :
+                    d[31] ? d[31] : 0);
 //Decoder to assign correct ASCII value depending on which displayContents signal is used                        
-    assign ascii = d[0] ? a[0] :
-                   d[1] ? a[1] :
-                   d[2] ? a[2] :
-                   d[3] ? a[3] :
-                   d[4] ? a[4] :
-                   d[5] ? a[5] :
-                   d[6] ? a[6] :
-                   d[7] ? a[7] :
-                   d[8] ? a[8] :
-                   d[9] ? a[9] :
-                   d[10] ? a[10] :
-                   d[11] ? a[11] :
-                   d[12] ? a[12] :
-                   d[13] ? a[13] :
-                   d[14] ? a[14] :
-                   d[15] ? a[15] :
-                   d[16] ? a[16] :
-                   d[17] ? a[17] :
-                   d[19] ? a[19] :
-                   d[20] ? a[20] :
-                   d[21] ? a[21] :
-                   d[22] ? a[22] :
-                   d[18] ? a[18] : 
-                   d[23] ? a[23] :
-                   d[24] ? a[24] :
-                   d[25] ? a[25] :
-                   d[26] ? a[26] :
-                   d[27] ? a[27] :
-                   d[28] ? a[28] :
-                   d[29] ? a[29] :
-                   d[30] ? a[30] :
-                   d[31] ? a[31] : 7'h30; //defaulted to 0
+assign ascii = d[0] ? a[0] :
+                d[1] ? a[1] :
+                d[2] ? a[2] :
+                d[3] ? a[3] :
+                d[4] ? a[4] :
+                d[5] ? a[5] :
+                d[6] ? a[6] :
+                d[7] ? a[7] :
+                d[8] ? a[8] :
+                d[9] ? a[9] :
+                d[10] ? a[10] :
+                d[11] ? a[11] :
+                d[12] ? a[12] :
+                d[13] ? a[13] :
+                d[14] ? a[14] :
+                d[15] ? a[15] :
+                d[16] ? a[16] :
+                d[17] ? a[17] :
+                d[19] ? a[19] :
+                d[20] ? a[20] :
+                d[21] ? a[21] :
+                d[22] ? a[22] :
+                d[18] ? a[18] : 
+                d[23] ? a[23] :
+                d[24] ? a[24] :
+                d[25] ? a[25] :
+                d[26] ? a[26] :
+                d[27] ? a[27] :
+                d[28] ? a[28] :
+                d[29] ? a[29] :
+                d[30] ? a[30] :
+                d[31] ? a[31] : 
+                d[32] ? a[32] : 
+                d[33] ? a[33] : 
+                d[34] ? a[34] : 
+                d[35] ? a[35] : 
+                d[36] ? a[36] : 
+                d[37] ? a[37] : 
+                d[38] ? a[38] : 
+                d[39] ? a[39] : 
+                d[40] ? a[40] : 7'h30; //default to 0
+
  
  //ASCII_ROM////////////////////////////////////////////////////////////       
     //Connections to ascii_rom
