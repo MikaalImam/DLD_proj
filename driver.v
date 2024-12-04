@@ -1,9 +1,10 @@
 module vga_test
 	(
-		input wire clk, reset, revolution,timer_start,
+		input wire clk, reset, revolution, home_page, //times_up, 
 		output wire hsync, vsync,
 		output wire [11:0] rgb
 	);
+	wire times_up;
 	wire ms_clk;
     wire sec_clk;
     clk_dividers clkmod(.clk(clk), .reset(reset), .ms_clk(ms_clk), .sec_clk(sec_clk));
@@ -35,7 +36,7 @@ module vga_test
     wire [6:0] distThousands;
     wire [6:0] speedOnes;
     wire [6:0] speedTens;
-    counter counter1(.clk(clk),.revolution(revolution), .reset(timer_start), .ms_clk(ms_clk), //switched rest wtih my own reset 
+    counter counter1(.clk(clk),.revolution(revolution), .reset(home_page), .ms_clk(ms_clk), //switched rest wtih my own reset 
             .out(counterValue), .tens_out(final_tens), .mins_out(final_mins), 
             .rev_counter(rev_counter),
             .distOnes(distOnes),
@@ -43,15 +44,16 @@ module vga_test
             .distHundreds(distHundreds),
             .distThousands(distThousands),
             .speedOnes(speedOnes),
-            .speedTens(speedTens)
+            .speedTens(speedTens),
+            .times_up(times_up)
             );
             
     //////////////////////////////////////////////////////////////////////////////////
     
     //READ MEMORY FILE FOR INPUT ASCII ARRAY, CREATE SIGNAL ARRAY                       
     wire [6:0] ascii;  //Signal is concatenated with X coordinate to get a value for the ROM address                 
-    wire [6:0] a[40:0]; //Each index of this array holds a 7-bit ASCII value //6???
-    wire d[40:0]; //Each index of this array holds a signal that says whether the i-th item in array a above should display
+    wire [6:0] a[55:0]; //Each index of this array holds a 7-bit ASCII value //6???
+    wire d[55:0]; //Each index of this array holds a signal that says whether the i-th item in array a above should display
     wire displayContents; //Control signal to determine whether a character should be displayed on the screen
 
 //initial begin
@@ -152,32 +154,32 @@ module vga_test
         .x(x),.y(y), .displayContents(d[22]), .x_desired(10'd496), .y_desired(10'd80));  
         
         //Home page text
-        textGeneration c23 (.clk(clk),.reset(reset),.asciiData(a[23]), .ascii_In(7'h43),
-        .x(x),.y(y), .displayContents(d[23]), .x_desired(10'd280), .y_desired(10'd240));  
+         textGeneration c23 (.clk(clk),.reset(reset),.asciiData(a[23]), .ascii_In(7'h43),
+        .x(x),.y(y), .displayContents(d[23]), .x_desired(10'd272), .y_desired(10'd240));  
         
         textGeneration c24 (.clk(clk),.reset(reset),.asciiData(a[24]), .ascii_In(7'h59),
-        .x(x),.y(y), .displayContents(d[24]), .x_desired(10'd288), .y_desired(10'd240));  
+        .x(x),.y(y), .displayContents(d[24]), .x_desired(10'd280), .y_desired(10'd240));  
         
         textGeneration c25 (.clk(clk),.reset(reset),.asciiData(a[25]), .ascii_In(7'h43),
-        .x(x),.y(y), .displayContents(d[25]), .x_desired(10'd296), .y_desired(10'd240));  
+        .x(x),.y(y), .displayContents(d[25]), .x_desired(10'd288), .y_desired(10'd240));  
         
         textGeneration c26 (.clk(clk),.reset(reset),.asciiData(a[26]), .ascii_In(7'h4c),
-        .x(x),.y(y), .displayContents(d[26]), .x_desired(10'd304), .y_desired(10'd240));  
+        .x(x),.y(y), .displayContents(d[26]), .x_desired(10'd296), .y_desired(10'd240));  
 
         textGeneration c27 (.clk(clk),.reset(reset),.asciiData(a[27]), .ascii_In(7'h45),
-        .x(x),.y(y), .displayContents(d[27]), .x_desired(10'd312), .y_desired(10'd240));  
+        .x(x),.y(y), .displayContents(d[27]), .x_desired(10'd304), .y_desired(10'd240));  
         
         textGeneration c28 (.clk(clk),.reset(reset),.asciiData(a[28]), .ascii_In(7'h4d),
-        .x(x),.y(y), .displayContents(d[28]), .x_desired(10'd320), .y_desired(10'd240));  
+        .x(x),.y(y), .displayContents(d[28]), .x_desired(10'd312), .y_desired(10'd240));  
         
         textGeneration c29 (.clk(clk),.reset(reset),.asciiData(a[29]), .ascii_In(7'h49),
-        .x(x),.y(y), .displayContents(d[29]), .x_desired(10'd328), .y_desired(10'd240));  
+        .x(x),.y(y), .displayContents(d[29]), .x_desired(10'd320), .y_desired(10'd240));  
         
         textGeneration c30 (.clk(clk),.reset(reset),.asciiData(a[30]), .ascii_In(7'h4c),
-        .x(x),.y(y), .displayContents(d[30]), .x_desired(10'd336), .y_desired(10'd240));  
+        .x(x),.y(y), .displayContents(d[30]), .x_desired(10'd328), .y_desired(10'd240));  
 
         textGeneration c31 (.clk(clk),.reset(reset),.asciiData(a[31]), .ascii_In(7'h4c),
-        .x(x),.y(y), .displayContents(d[31]), .x_desired(10'd344), .y_desired(10'd240));  
+        .x(x),.y(y), .displayContents(d[31]), .x_desired(10'd336), .y_desired(10'd240));  
         
         //Highscore
         textGeneration c32 (.clk(clk),.reset(reset),.asciiData(a[32]), .ascii_In(7'h48),
@@ -206,15 +208,61 @@ module vga_test
 
         textGeneration c40 (.clk(clk),.reset(reset),.asciiData(a[40]), .ascii_In(7'h45),
         .x(x),.y(y), .displayContents(d[40]), .x_desired(10'd496), .y_desired(10'd96));
+        
+        //Times up page
+         textGeneration c41 (.clk(clk),.reset(reset),.asciiData(a[41]), .ascii_In(7'h54), 
+        .x(x),.y(y), .displayContents(d[41]), .x_desired(10'd272), .y_desired(10'd210));  
 
+        textGeneration c42 (.clk(clk),.reset(reset),.asciiData(a[42]), .ascii_In(7'h49),
+        .x(x),.y(y), .displayContents(d[42]), .x_desired(10'd280), .y_desired(10'd210));
+
+        textGeneration c43 (.clk(clk),.reset(reset),.asciiData(a[43]), .ascii_In(7'h4d),
+        .x(x),.y(y), .displayContents(d[43]), .x_desired(10'd288), .y_desired(10'd210));
+
+        textGeneration c44 (.clk(clk),.reset(reset),.asciiData(a[44]), .ascii_In(7'h45),
+        .x(x),.y(y), .displayContents(d[44]), .x_desired(10'd296), .y_desired(10'd210));
+
+        textGeneration c45 (.clk(clk),.reset(reset),.asciiData(a[45]), .ascii_In(7'h53),
+        .x(x),.y(y), .displayContents(d[45]), .x_desired(10'd304), .y_desired(10'd210));
+
+        textGeneration c46 (.clk(clk),.reset(reset),.asciiData(a[46]), .ascii_In(7'h55),
+        .x(x),.y(y), .displayContents(d[46]), .x_desired(10'd320), .y_desired(10'd210));
+
+        textGeneration c47 (.clk(clk),.reset(reset),.asciiData(a[47]), .ascii_In(7'h50),
+        .x(x),.y(y), .displayContents(d[47]), .x_desired(10'd328), .y_desired(10'd210));
+
+        textGeneration c48 (.clk(clk),.reset(reset),.asciiData(a[48]), .ascii_In(7'h44),
+        .x(x),.y(y), .displayContents(d[48]), .x_desired(10'd272), .y_desired(10'd270));
+
+        textGeneration c49 (.clk(clk),.reset(reset),.asciiData(a[49]), .ascii_In(7'h49),
+        .x(x),.y(y), .displayContents(d[49]), .x_desired(10'd280), .y_desired(10'd270));
+
+        textGeneration c50 (.clk(clk),.reset(reset),.asciiData(a[50]), .ascii_In(7'h53),
+        .x(x),.y(y), .displayContents(d[50]), .x_desired(10'd288), .y_desired(10'd270));
+
+        textGeneration c51 (.clk(clk),.reset(reset),.asciiData(a[51]), .ascii_In(7'h54),
+        .x(x),.y(y), .displayContents(d[51]), .x_desired(10'd296), .y_desired(10'd270));
         
+        textGeneration c52 (.clk(clk),.reset(reset),.asciiData(a[52]), .ascii_In(distThousands), //0
+        .x(x),.y(y), .displayContents(d[52]), .x_desired(10'd320), .y_desired(10'd270)); 
         
+        textGeneration c53 (.clk(clk),.reset(reset),.asciiData(a[53]), .ascii_In(distHundreds), //0
+        .x(x),.y(y), .displayContents(d[53]), .x_desired(10'd328), .y_desired(10'd270));   
         
+        textGeneration c54 (.clk(clk),.reset(reset),.asciiData(a[54]), .ascii_In(distTens), //0
+        .x(x),.y(y), .displayContents(d[54]), .x_desired(10'd336), .y_desired(10'd270));   
+        
+        textGeneration c55 (.clk(clk),.reset(reset),.asciiData(a[55]), .ascii_In(distOnes), //0
+        .x(x),.y(y), .displayContents(d[55]), .x_desired(10'd344), .y_desired(10'd270));
         
    
  //Decoder to trigger displayContents signal high or low depending on which ASCII char is reached
     wire display_sprite;
     wire [11:0] spriteData;
+    wire display_sprite_2;
+    wire [11:0] spriteData_2;
+    wire display_sprite_3;
+    wire [11:0] spriteData_3;
     reg [9:0] sprite_x; 
     reg [23:0] clk_div; // 30-bit register for clock division
     wire slow_clk = clk_div[23]; // Use the MSB as the slower clock signal
@@ -236,7 +284,12 @@ module vga_test
 
     sprite_display sprite1(.clk(clk),.reset(reset),.x_desired(sprite_x),.y_desired(10'd200),.x(x),.y(y),.spriteData(spriteData),.display_sprite(display_sprite));
     
-assign displayContents = (timer_start == 0) ? 
+    sprite_display sprite2(.clk(clk),.reset(reset),.x_desired(sprite_x),.y_desired(10'd270),.x(x),.y(y),.spriteData(spriteData_2),.display_sprite(display_sprite_2));
+    
+    sprite_display sprite3(.clk(clk),.reset(reset),.x_desired(sprite_x),.y_desired(10'd300),.x(x),.y(y),.spriteData(spriteData_3),.display_sprite(display_sprite_3));
+    
+assign displayContents = (home_page == 0) ? 
+                    (times_up == 0) ? 
                     (d[0] ? d[0] :
                     d[1] ? d[1] :
                     d[2] ? d[2] :
@@ -269,9 +322,24 @@ assign displayContents = (timer_start == 0) ?
                     d[38] ? d[38] :
                     d[39] ? d[39] :
                     d[40] ? d[40] :
-                    display_sprite ? display_sprite :
-                     0) : (                    
-                    d[23] ? d[23] :
+                    display_sprite ? display_sprite : 0) : //times_up == 1
+                    (d[41] ? d[41] :
+                    d[42] ? d[42] :
+                    d[43] ? d[43] :
+                    d[44] ? d[44] :
+                    d[45] ? d[45] :
+                    d[46] ? d[46] :
+                    d[47] ? d[47] :
+                    d[48] ? d[48] :
+                    d[49] ? d[49] :
+                    d[50] ? d[50] :
+                    d[51] ? d[51] :
+                    d[52] ? d[52] :
+                    d[53] ? d[53] :
+                    d[54] ? d[54] :
+                    d[55] ? d[55] :
+                    display_sprite_3 ? display_sprite_3: 0) : 
+                    (d[23] ? d[23] : //home_page is == 1
                     d[24] ? d[24] :
                     d[25] ? d[25] :
                     d[26] ? d[26] :
@@ -279,7 +347,8 @@ assign displayContents = (timer_start == 0) ?
                     d[28] ? d[28] :
                     d[29] ? d[29] :
                     d[30] ? d[30] :
-                    d[31] ? d[31] : 0);
+                    d[31] ? d[31] :
+                    display_sprite_2 ? display_sprite_2 : 0);
 //Decoder to assign correct ASCII value depending on which displayContents signal is used                        
 assign ascii = d[0] ? a[0] :
                 d[1] ? a[1] :
@@ -321,7 +390,23 @@ assign ascii = d[0] ? a[0] :
                 d[37] ? a[37] : 
                 d[38] ? a[38] : 
                 d[39] ? a[39] : 
-                d[40] ? a[40] : 7'h30; //default to 0
+                d[40] ? a[40] : 
+                d[40] ? a[40] :
+                d[41] ? a[41] :
+                d[42] ? a[42] :
+                d[43] ? a[43] :
+                d[44] ? a[44] :
+                d[45] ? a[45] :
+                d[46] ? a[46] :
+                d[47] ? a[47] :
+                d[48] ? a[48] :
+                d[49] ? a[49] :
+                d[50] ? a[50] :
+                d[51] ? a[51] :
+                d[52] ? a[52] :
+                d[53] ? a[53] :
+                d[54] ? a[54] :
+                d[55] ? a[55] : 7'h30; //default to 0
 
  
  //ASCII_ROM////////////////////////////////////////////////////////////       
@@ -355,8 +440,9 @@ assign ascii = d[0] ? a[0] :
     //assign rgb = video_on ? (rom_bit ? ((displayContents) ? 12'hFFF: 12'h8): 12'h8) : 12'b0; //blue background white text
     
 assign rgb = video_on ? (       //add changes here
-               timer_start == 1 ? (rom_bit ? (displayContents ? 12'hFFF :12'h000) : 12'h000) :
-               display_sprite ? spriteData :  // If sprite is being displayed, use spriteData
-               (rom_bit ? (displayContents ? 12'hFFF :12'h000) : 12'h000)
-            ) : 12'b0;  // If video is off, turn off the RGB output
+               home_page == 1 ? display_sprite_2 ? spriteData_2 : (rom_bit ? (displayContents ? 12'hFFF :12'h000) : 12'h000) :
+               times_up == 1 ?  display_sprite_3 ? spriteData_3 : (rom_bit ? (displayContents ? 12'hFFF :12'h000) : 12'h000) :
+               (display_sprite ? spriteData :  // If sprite is being displayed, use spriteData
+               (rom_bit ? (displayContents ? 12'hFFF :12'h000) : 12'h000))
+            ) : 12'b0;
 endmodule
