@@ -34,9 +34,10 @@ set_property PACKAGE_PIN R19 [get_ports vsync]
 set_property PACKAGE_PIN U18 [get_ports reset]						
         set_property IOSTANDARD LVCMOS33 [get_ports reset]
 
-set_property PACKAGE_PIN R2 [get_ports timer_start]						
-        set_property IOSTANDARD LVCMOS33 [get_ports timer_start]        
-    
+set_property PACKAGE_PIN R2 [get_ports home_page]						
+        set_property IOSTANDARD LVCMOS33 [get_ports home_page]        
+      
+        
 set_property PACKAGE_PIN G2 [get_ports revolution]						
 	set_property IOSTANDARD LVCMOS33 [get_ports revolution]
 	set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets revolution_IBUF]
