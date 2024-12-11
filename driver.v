@@ -36,6 +36,10 @@ module vga_test
     wire [6:0] distThousands;
     wire [6:0] speedOnes;
     wire [6:0] speedTens;
+    wire [6:0] HOnes;
+    wire [6:0] HTens;
+    wire [6:0] HHundreds;
+    wire [6:0] HThousands;
     counter counter1(.clk(clk),.revolution(revolution), .reset(home_page), .ms_clk(ms_clk), //switched rest wtih my own reset 
             .out(counterValue), .tens_out(final_tens), .mins_out(final_mins), 
             .rev_counter(rev_counter),
@@ -43,6 +47,10 @@ module vga_test
             .distTens(distTens),
             .distHundreds(distHundreds),
             .distThousands(distThousands),
+            .HOnes(HOnes),
+            .HTens(HTens),
+            .HHundreds(HHundreds),
+            .HThousands(HThousands),
             .speedOnes(speedOnes),
             .speedTens(speedTens),
             .times_up(times_up)
@@ -52,8 +60,8 @@ module vga_test
     
     //READ MEMORY FILE FOR INPUT ASCII ARRAY, CREATE SIGNAL ARRAY                       
     wire [6:0] ascii;  //Signal is concatenated with X coordinate to get a value for the ROM address                 
-    wire [6:0] a[55:0]; //Each index of this array holds a 7-bit ASCII value //6???
-    wire d[55:0]; //Each index of this array holds a signal that says whether the i-th item in array a above should display
+    wire [6:0] a[59:0]; //Each index of this array holds a 7-bit ASCII value //6???
+    wire d[59:0]; //Each index of this array holds a signal that says whether the i-th item in array a above should display
     wire displayContents; //Control signal to determine whether a character should be displayed on the screen
 
 //initial begin
@@ -255,6 +263,18 @@ module vga_test
         textGeneration c55 (.clk(clk),.reset(reset),.asciiData(a[55]), .ascii_In(distOnes), //0
         .x(x),.y(y), .displayContents(d[55]), .x_desired(10'd344), .y_desired(10'd270));
         
+        textGeneration c56 (.clk(clk),.reset(reset),.asciiData(a[56]), .ascii_In(HThousands), //0
+        .x(x),.y(y), .displayContents(d[56]), .x_desired(10'd512), .y_desired(10'd96)); 
+        
+        textGeneration c57 (.clk(clk),.reset(reset),.asciiData(a[57]), .ascii_In(HHundreds), //0
+        .x(x),.y(y), .displayContents(d[57]), .x_desired(10'd520), .y_desired(10'd96));   
+        
+        textGeneration c58 (.clk(clk),.reset(reset),.asciiData(a[58]), .ascii_In(HTens), //0
+        .x(x),.y(y), .displayContents(d[58]), .x_desired(10'd528), .y_desired(10'd96));   
+        
+        textGeneration c59 (.clk(clk),.reset(reset),.asciiData(a[59]), .ascii_In(HOnes), //0
+        .x(x),.y(y), .displayContents(d[59]), .x_desired(10'd536), .y_desired(10'd96));
+        
    
  //Decoder to trigger displayContents signal high or low depending on which ASCII char is reached
     wire display_sprite;
@@ -282,11 +302,11 @@ module vga_test
         sprite_x <= sprite_x + 1; // Increment x coordinate
     end
 
-    sprite_display sprite1(.clk(clk),.reset(reset),.x_desired(sprite_x),.y_desired(10'd200),.x(x),.y(y),.spriteData(spriteData),.display_sprite(display_sprite));
+    sprite_display sprite1(.clk(clk),.reset(reset),.home_page(home_page), .x_desired(sprite_x),.y_desired(10'd200),.x(x),.y(y),.spriteData(spriteData),.display_sprite(display_sprite));
     
-    sprite_display sprite2(.clk(clk),.reset(reset),.x_desired(sprite_x),.y_desired(10'd270),.x(x),.y(y),.spriteData(spriteData_2),.display_sprite(display_sprite_2));
+    sprite_display sprite2(.clk(clk),.reset(reset),.home_page(home_page),.x_desired(sprite_x),.y_desired(10'd270),.x(x),.y(y),.spriteData(spriteData_2),.display_sprite(display_sprite_2));
     
-    sprite_display sprite3(.clk(clk),.reset(reset),.x_desired(sprite_x),.y_desired(10'd300),.x(x),.y(y),.spriteData(spriteData_3),.display_sprite(display_sprite_3));
+    sprite_display sprite3(.clk(clk),.reset(reset),.home_page(home_page),.x_desired(sprite_x),.y_desired(10'd300),.x(x),.y(y),.spriteData(spriteData_3),.display_sprite(display_sprite_3));
     
 assign displayContents = (home_page == 0) ? 
                     (times_up == 0) ? 
@@ -311,7 +331,7 @@ assign displayContents = (home_page == 0) ?
                     d[19] ? d[19] :
                     d[20] ? d[20] :
                     d[21] ? d[21] :
-                    d[22] ? d[22] :
+//                    d[22] ? d[22] :
                     d[18] ? d[18] :
                     d[32] ? d[32] :
                     d[33] ? d[33] :
@@ -322,6 +342,10 @@ assign displayContents = (home_page == 0) ?
                     d[38] ? d[38] :
                     d[39] ? d[39] :
                     d[40] ? d[40] :
+                    d[56] ? d[56] :
+                    d[57] ? d[57] :
+                    d[58] ? d[58] :
+                    d[59] ? d[59] :
                     display_sprite ? display_sprite : 0) : //times_up == 1
                     (d[41] ? d[41] :
                     d[42] ? d[42] :
@@ -406,7 +430,11 @@ assign ascii = d[0] ? a[0] :
                 d[52] ? a[52] :
                 d[53] ? a[53] :
                 d[54] ? a[54] :
-                d[55] ? a[55] : 7'h30; //default to 0
+                d[55] ? a[55] :
+                d[56] ? a[56] :
+                d[57] ? a[57] :
+                d[58] ? a[58] :
+                d[59] ? a[59] : 7'h30; //default to 0
 
  
  //ASCII_ROM////////////////////////////////////////////////////////////       
