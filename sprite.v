@@ -23,15 +23,24 @@
 module sprite_display (
     input wire clk,
     input wire reset,
+    input wire home_page, 
     input [9:0] x_desired, y_desired,  // Position where the sprite should be displayed
-    input [9:0] x, y,                   // Current x, y pixel coordinates
-    output [13:0] spriteData,           // Pixel color data (RGB)
+    input [9:0] x, y,                 // Current x, y pixel coordinates
+    output reg [13:0] spriteData,           // Pixel color data (RGB)
     output display_sprite               // Whether to display the sprite at the location
 );
 
     // Define a 64x64 sprite (bicycle)
     //reg [31:0] sprite[31:0]; 
     reg [63:0] sprite[63:0];// A 64x64 sprite, 64 rows of 64 bits each
+    reg player;
+    initial begin
+    player = 0;
+    end
+    always @(negedge home_page) begin
+    player <= !player;
+    end
+    
     
     initial begin
         // Define the sprite pattern for the dino
@@ -111,7 +120,17 @@ end
     wire [5:0] spriteCol;
     assign spriteCol = x - x_desired;  // Relative x position within the sprite row, should be between 0 and 15
     // Get the pixel value from the sprite
-    assign spriteData = (sprite[spriteRow][spriteCol] == 1'b1) ? 12'hFFF : 12'h000;  // If pixel is on, set to white; else black
+    always @(posedge clk) begin
+        if (player) begin
+        spriteData <= (sprite[spriteRow][spriteCol] == 1'b1) ? 
+                    ((spriteRow % 2 == 0) ? 12'hF00 : 12'h00F) : 12'h000;  
+        end else if(!player) begin
+        spriteData <= (sprite[spriteRow][spriteCol] == 1'b1) ? 
+                    ((spriteRow % 2 == 0) ? 12'h0F0 : 12'h00F) : 12'h000;  
+        end
+     end               
+                    
+                // If pixel is on, set to white; else bla       
 
 
     // Output the pixel value based on x, y coordinates
