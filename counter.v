@@ -1,3 +1,4 @@
+
 module counter(
     input clk,revolution, reset, ms_clk,
     output [6:0] out,
@@ -8,6 +9,10 @@ module counter(
     output reg [6:0] distTens,
     output reg [6:0] distHundreds,
     output reg [6:0] distThousands,
+    output reg [6:0] HOnes,
+    output reg [6:0] HTens,
+    output reg [6:0] HHundreds,
+    output reg [6:0] HThousands,
     output reg [6:0] speedOnes,
     output reg [6:0] speedTens,
     output times_up
@@ -15,6 +20,7 @@ module counter(
      //1 Hz frequency counter
     /////////////////////////////////////////////////////////////
     reg [14:0] dist;
+    reg [14:0] Highscore;
     reg [14:0] last_dist;
     reg [26:0] counter;
     wire [26:0] counter_NS;
@@ -75,52 +81,80 @@ module counter(
             ms_counter <= ms_counter + 1;  // Increment millisecond counter
         end
     end
-    
-
+    initial begin
+        Highscore <= 0;
+    end
     always @(posedge revolution or posedge reset) begin
-        if (reset) begin
-            rev_counter <= 7'h30;
-            dist <= 0;
-            last_dist <= 0;
-            time_difference_ms <= 0;
-            last_ms_counter <= 0;
-            speedOnes <= 7'h30;
-            speedTens <= 7'h30;
-        end else if (rev_counter < 7'h39) begin
-            rev_counter <= rev_counter + 1;
-            last_dist <= dist;
-            dist <= dist + 2;
-            
-    
-            // Update distance registers
-            distOnes <=  14'h30 + dist % 10;
-            distTens <=  14'h30 + (dist / 10) % 10;
-            distHundreds <=  14'h30 + (dist / 100) % 10;
-            distThousands <=  14'h30 + (dist / 1000) % 10;
-    
-           // Calculate time difference in milliseconds
-            time_difference_ms <= ms_counter - last_ms_counter;
-            last_ms_counter <= ms_counter;
+    if (reset) begin
+        // Reset all values when reset is high
+        rev_counter <= 7'h30;
+        dist <= 0;
+        last_dist <= 0;
+        time_difference_ms <= 0;
+        last_ms_counter <= 0;
+        speedOnes <= 7'h30;
+        speedTens <= 7'h30;
+        
+        // Preserve Highscore during reset
+        HOnes <= 7'h30 + Highscore % 10;
+        HTens <= 7'h30 + (Highscore / 10) % 10;
+        HHundreds <= 7'h30 + (Highscore / 100) % 10;
+        HThousands <= 7'h30 + (Highscore / 1000) % 10;
 
-            // Calculate speed (distance / time)
-            if (time_difference_ms != 0) begin
-                speed_mps = ((2*1000) / time_difference_ms);  // Convert to meters/second
-            end else begin
-                speed_mps = 1;  // Avoid division by zero
+        // Reset distance display
+        distOnes <= 7'h30;
+        distTens <= 7'h30;
+        distHundreds <= 7'h30;
+        distThousands <= 7'h30;
+
+    end else begin
+        // Increment revolution counter
+        if (rev_counter < 7'h39) begin
+            rev_counter <= rev_counter + 1;
+        end else begin
+            rev_counter <= 7'h30; // Reset rev_counter if it exceeds the limit
+        end
+
+        // Update distance
+        dist <= dist + 2;
+
+        // Update distance registers for display
+        distOnes <= 7'h30 + dist % 10;
+        distTens <= 7'h30 + (dist / 10) % 10;
+        distHundreds <= 7'h30 + (dist / 100) % 10;
+        distThousands <= 7'h30 + (dist / 1000) % 10;
+
+        // Update Highscore if distance surpasses it
+            if (dist >= Highscore) begin
+            Highscore <= dist;
+            HOnes <= 7'h30 + Highscore % 10;
+            HTens <= 7'h30 + (Highscore / 10) % 10;
+            HHundreds <= 7'h30 + (Highscore / 100) % 10;
+            HThousands <= 7'h30 + (Highscore / 1000) % 10;
             end
 
-            // Convert speed to ASCII for display
-            speedTens <= (speed_mps / 10) + 7'h30;
-            speedOnes <= (speed_mps % 10) + 7'h30;
-    
-            // Reset distance if maximum value reached
-            if (dist >= 9999) begin
-                dist <= 0;
-            end         
+        // Calculate time difference in milliseconds
+        time_difference_ms <= ms_counter - last_ms_counter;
+        last_ms_counter <= ms_counter;
+
+        // Calculate speed (distance / time)
+        if (time_difference_ms != 0) begin
+            speed_mps = ((2 * 1000) / time_difference_ms);  // Convert to meters/second
         end else begin
-            rev_counter <= 7'h30;
+            speed_mps = 1;  // Avoid division by zero
+        end
+
+        // Convert speed to ASCII for display
+        speedTens <= (speed_mps / 10) + 7'h30;
+        speedOnes <= (speed_mps % 10) + 7'h30;
+
+        // Reset distance if maximum value reached
+        if (dist >= 9999) begin
+            dist <= 0;
         end
     end
+end
+
     
     assign counter_NS = (counter < 99999999) ? counter + 1 : 0; //1Hz
     assign nextOp = (counter == 0);
